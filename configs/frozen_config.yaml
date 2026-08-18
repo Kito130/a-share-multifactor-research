@@ -1,0 +1,103 @@
+freeze_version: p4.1
+status: FROZEN_AFTER_VALIDATION
+sample:
+  warmup:
+  - '2014-12-01'
+  - '2015-12-31'
+  research:
+  - '2016-01-01'
+  - '2019-12-31'
+  validation:
+  - '2020-01-01'
+  - '2021-12-31'
+  final_oos:
+  - '2022-01-01'
+  - '2025-12-31'
+factors:
+  momentum_recent_skip_observations: 21
+  momentum_lookback_observations: 252
+  lowvol_window_observations: 60
+  lowvol_standard_deviation: sample
+  winsor_lower_quantile: 0.01
+  winsor_upper_quantile: 0.99
+  zscore_standard_deviation: sample
+universe:
+  listing_age_minimum_trading_days: 120
+  liquidity_window_observations: 20
+  liquidity_excluded_lower_quantile: 0.2
+  exclude_historical_st_name: true
+  require_all_three_factors: true
+portfolio:
+  initial_capital_cny: 100000000.0
+  maximum_holdings: 100
+  target_gross_weight: 1.0
+  maximum_single_name_target_weight: 0.02
+  allow_fractional_adjusted_units: true
+  board_lot_rounding: false
+  rebalance_frequency: monthly
+  signal_timing: month_end_close
+  execution_timing: next_market_trading_day_open
+  trade_ordering: sells_before_buys
+  insufficient_cash_allocation: pro_rata_including_blocked_buy_demand
+  minimum_order_notional_cny: 0.01
+  position_unit_epsilon: 1.0e-12
+composite:
+  bm_proxy_z_weight: 0.3333333333333333
+  momentum_12_1_z_weight: 0.3333333333333333
+  lowvol_60_z_weight: 0.3333333333333333
+cost_scenarios:
+- scenario: STRESS_5BPS
+  commission_slippage_rate_one_way: 0.0005
+  is_baseline: false
+- scenario: BASE_10BPS
+  commission_slippage_rate_one_way: 0.001
+  is_baseline: true
+- scenario: STRESS_20BPS
+  commission_slippage_rate_one_way: 0.002
+  is_baseline: false
+valuation:
+  trading_price: adjusted_open
+  closing_valuation_price: adjusted_close
+  missing_close_valuation: last_available_adjusted_close
+  stale_price_execution_allowed: false
+  terminal_liquidation: false
+corporate_actions:
+  effective_date_field: delist_date
+  quantity_basis: raw_share_equivalent
+  successor_adjusted_unit_basis: first_available_successor_adj_factor
+  pre_listing_valuation: value_preserving_corporate_action_carry
+  fractional_shares_allowed: true
+  automatic_successor_sale: false
+  event_activity_type: CORPORATE_ACTION
+metrics:
+  trading_days_per_year: 252
+  risk_free_rate: 0.0
+data_policies:
+  benchmark_code: 000985.CSI
+  benchmark_name: CSI All Share Index
+  pb_disclosure: 使用供应商历史PB构造1/PB代理，未自行重建严格 point-in-time book equity，供应商历史修订政策未完全核验。
+  historical_stamp_duty_config: configs/trading_costs.yaml
+  corporate_action_table: data/manual/corporate_actions.csv
+source_sha256:
+  data/processed/daily_panel.parquet: 1de1e179645b13336e81dde3148a7b80b3b1699243b41d254c223cefdfac042a
+  data/processed/month_end_base_panel.parquet: 0a520092f8bf84c05c30715135680f3d8d8f23b3235812a683350d5822cdc71d
+  data/processed/execution_status.parquet: 77fb4c8f9206aca5293fbf03563ad94f0f4dcebfa3f717c483b65428f63e4b42
+  data/processed/benchmark_daily.parquet: abc700113c7920cb12f4916751ca7f64b6d70c635350ac94302bd8e3d6a6b17b
+  data/static/stock_basic_all_status.parquet: 464dc26ea8d83b6cc42582a657ddd7fcde09e09a7fa0f10962ae36db32cb539b
+  data/manual/security_code_history.csv: 918e16a099010b17d071a2292066a46bae740e913c0a1cd598d8300e7b08c769
+  data/manual/corporate_actions.csv: 83c3e889b02d975975e773c2b01fb30ad0dc8b5dfd5397277085d04ba117e2b4
+  configs/trading_costs.yaml: 32003e3d1e8ebdddf6e261ca7032306572d7b06b8bea10f9c5f3a08a5d19f5a1
+  configs/p2_factor_research.yaml: f09c5f9aed29c0c33cd0d1ec3d79119e15c8d1cc4a9a7f2852fbc7205b015ec3
+  data/processed/p2_single_factor_panel.parquet: 72e0e835429ce3299bbfa32a8f221931ce22cab03b420d07c6b9e93fd7c4764b
+  reports/factor_research/p2_run_manifest.json: 0856297a83296e416f0c63aa84558237d49ef10c348da7f990d9fad2640fe163
+  configs/p3_backtest.yaml: c793cb53153d4151d6dc90a18ac1d7029f41f34a64f29277f3c6fd1a416ffe97
+  data/processed/p3_composite_signals.parquet: b8e5ad8b20bf656944730d6bb1827de70b5f506231623609fdd7660efe0319f4
+  data/processed/p3_target_holdings.parquet: e044d92372c9bf2ef586e3e6c15434ae2158b7c7d747723e93942b45690bbdf9
+  data/processed/p3_daily_portfolio.parquet: 008bfa2f938c4f599a2211ac226092db02c15b1f1121f007b928a2195216f94c
+  reports/backtest/p3_run_manifest.json: 5dfd2aa5cecf59720f7a2cc98e736a10f0735e23e0489d340d6c9508236e640e
+post_freeze_rules:
+  allow_parameter_changes: false
+  allow_validation_retuning: false
+  final_oos_requires_new_explicit_authorization: true
+  final_oos_has_been_run: false
+  p5_implementation_generated: false

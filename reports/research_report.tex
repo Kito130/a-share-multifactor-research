@@ -1,0 +1,206 @@
+\documentclass[11pt,a4paper]{ctexart}
+\usepackage[margin=2.25cm]{geometry}
+\usepackage{booktabs,longtable,array,graphicx,float,xcolor,hyperref,fancyhdr}
+\usepackage{enumitem}
+\definecolor{navy}{HTML}{17365D}
+\definecolor{softblue}{HTML}{EAF1F8}
+\hypersetup{colorlinks=true,linkcolor=navy,urlcolor=navy}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.35em}
+\setlist{nosep}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{A 股多因子研究}
+\fancyhead[R]{P6 正式报告}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\newcommand{\pct}[1]{\textbf{#1}}
+\title{\textbf{A 股三因子选股研究}\\[0.4em]
+\large 从数据审计、冻结验证到一次性最终 OOS}
+\author{可复现量化研究项目}
+\date{2026 年 7 月 27 日}
+\begin{document}
+\maketitle
+\begin{abstract}
+本文记录一个以 1/PB、12-1 动量和 60 日低波为核心的 A 股月频横截面研究。
+项目将 2016 至 2019 定义为研究期、2020 至 2021 定义为验证期，并在参数冻结后
+只执行一次 2022 至 2025 最终 OOS。10 bps 单边成本下，最终 OOS 年化收益为
+\pct{8.29%}，累计收益为
+\pct{35.85%}，最大回撤为
+\pct{-19.81%}。P6 稳健性不改写原始结果，
+全部标记为事后研究，并显式披露退市陈旧估值及 PB 历史修订政策限制。
+\end{abstract}
+
+\section{研究设计与阶段治理}
+研究对象限定为沪深 A 股。P1 形成标准化日频、月末、执行状态和基准面板；
+P2 在研究期检验单因子；P3 构建带交易约束的事件驱动回测；P4 使用独立验证期并冻结
+配置；P5 通过冻结研究闸门后执行一次最终 OOS；P6 只做事后稳健性、报告和证据整理。
+冻结配置 SHA-256 为：
+\begin{quote}\small\ttfamily 14ab015fbce37a2236772f69d157c4b9ade05fcb92c0469301de553a22486d68\end{quote}
+P5 manifest 记录 45 个输出哈希，P6 前后逐项一致。
+
+\section{数据、口径与审计}
+日行情成交量由手换算为股，成交额由千元换算为人民币元；总股本、流通股本、自由流通
+股本和市值按已确认单位标准化。复权收盘价采用后复权
+\texttt{close\_hfq = close * adj\_factor}，收益由连续复权价格计算。证券代码变更
+同时保留当日真实 \texttt{ts\_code} 与连续主体
+\texttt{canonical\_ts\_code}。基准为中证全指
+\texttt{000985.CSI}。
+
+历史 ST、上市区间、停牌、开盘涨跌停均采用当日可得状态。历史卖出印花税按生效日配置。
+600270.SH 换股吸收合并按每股转换 3.8225 股 601598.SH 处理，记录为公司行动而非
+交易，并保持组合价值连续。
+
+\section{因子与组合构建}
+价值因子为供应商历史 PB 的倒数，仅在 PB 大于零时计算；动量为跳过最近约 21 个
+交易日后的约 252 日价格变化；低波因子为 60 日收益样本标准差的相反数。每月横截面
+1\% 和 99\% 缩尾后做样本标准化，三因子等权合成。股票池排除历史 ST、上市不足
+120 个交易日、流动性最低 20\% 及缺少任一因子的股票。组合选取 Top-100 等权，
+月末信号在下一市场交易日开盘执行。
+
+\section{单因子稳定性}
+\begin{table}[H]\centering\small
+\begin{tabular}{llrr}\toprule
+样本 & 因子 & 平均 Rank IC & 年化 ICIR \\\midrule
+研究期 & bm\_proxy & 0.0534 & 1.280 \\
+研究期 & lowvol\_60 & 0.0988 & 1.862 \\
+研究期 & momentum\_12\_1 & 0.0238 & 0.611 \\
+验证期 & bm\_proxy & 0.0338 & 0.615 \\
+验证期 & lowvol\_60 & 0.0857 & 1.817 \\
+验证期 & momentum\_12\_1 & -0.0005 & -0.009 \\
+最终 OOS & bm\_proxy & 0.0633 & 1.380 \\
+最终 OOS & lowvol\_60 & 0.0838 & 1.483 \\
+最终 OOS & momentum\_12\_1 & -0.0232 & -0.517 \\
+\bottomrule\end{tabular}
+\caption{三个样本阶段的单因子月度 Rank IC}
+\end{table}
+低波因子在三段样本均保持正 IC，价值因子也为正；动量在最终 OOS 转负。这一结果
+支持对组合收益来源保持克制：不能声称三个因子在所有阶段都稳定有效。
+
+\section{最终 OOS 结果}
+\begin{figure}[H]\centering
+\includegraphics[width=0.94\textwidth]{reports/figures/p6_cumulative_nav.png}
+\caption{P5 原始最终 OOS 累计净值}
+\end{figure}
+\begin{figure}[H]\centering
+\includegraphics[width=0.94\textwidth]{reports/figures/p6_drawdown.png}
+\caption{P5 原始最终 OOS 回撤}
+\end{figure}
+
+最终 OOS 共 969 个交易日。策略年化波动率
+17.49%，零无风险利率夏普
+0.543，信息比率
+0.544，双边换手
+18.47。同期中证全指累计收益
+-0.85%。
+
+\begin{table}[H]\centering
+\begin{tabular}{rrrr}\toprule
+年份 & 策略 & 中证全指 & 差值 \\\midrule
+2022 & 5.48% & -20.32% & 25.80% \\
+2023 & 0.37% & -7.04% & 7.40% \\
+2024 & 18.48% & 7.43% & 11.05% \\
+2025 & 8.31% & 24.60% & -16.29% \\
+\bottomrule\end{tabular}
+\caption{最终 OOS 年度收益}
+\end{table}
+\begin{figure}[H]\centering
+\includegraphics[width=0.92\textwidth]{reports/figures/p6_annual_returns.png}
+\caption{最终 OOS 年度收益对比}
+\end{figure}
+
+\section{事后稳健性研究}
+以下所有结果均为 \texttt{POST\_OOS\_ROBUSTNESS}，不替代 P5。
+\begin{table}[H]\centering\small
+\begin{tabular}{lrrrr}\toprule
+实验 & 年化收益 & 累计收益 & 最大回撤 & 双边换手 \\\midrule
+INDUSTRY\_NEUTRAL & 7.38% & 31.49% & -25.31% & 33.08 \\
+LOG\_SIZE\_NEUTRAL & 8.60% & 37.35% & -22.20% & 23.13 \\
+LOWVOL\_120 & 9.31% & 40.82% & -20.66% & 16.56 \\
+MICROCAP\_EXCLUDE\_BOTTOM20 & 8.12% & 35.01% & -19.79% & 18.11 \\
+MOMENTUM\_9\_1 & 7.67% & 32.84% & -20.55% & 18.01 \\
+\bottomrule\end{tabular}
+\caption{10 bps 场景稳健性变体}
+\end{table}
+\begin{figure}[H]\centering
+\includegraphics[width=0.94\textwidth]{reports/figures/p6_robustness.png}
+\caption{事后稳健性变体年化收益}
+\end{figure}
+
+微盘剔除检验结果是否依赖最小市值证券；两组窗口变体检验动量与低波定义；
+行业中性化先按月在行业内去均值再标准化；规模中性化将因子对总市值对数回归取残差。
+成本压力直接引用 P5 已冻结的 5、10、20 bps 结果，不重新运行或选择主情景。
+
+\section{退市回收率敏感性}
+P5 的三只退市持仓缺少精确退市日、回收日和现金流，因此原始回测使用最后可得价格估值。
+P6 不推断缺失事件，只调整期末账面价值。
+\begin{table}[H]\centering
+\begin{tabular}{rrrr}\toprule
+期末回收率 & 调整后累计收益 & 调整后年化收益 & 相对 P5 年化变化 \\\midrule
+0% & 34.27% & 7.96% & -0.33% \\
+25% & 34.66% & 8.05% & -0.25% \\
+50% & 35.06% & 8.13% & -0.16% \\
+75% & 35.46% & 8.21% & -0.08% \\
+100% & 35.85% & 8.29% & 0.00% \\
+\bottomrule\end{tabular}
+\caption{10 bps 场景期末退市回收率敏感性}
+\end{table}
+\begin{figure}[H]\centering
+\includegraphics[width=0.92\textwidth]{reports/figures/p6_delisting_sensitivity.png}
+\caption{期末退市回收率敏感性，不是交易路径重放}
+\end{figure}
+
+\section{失败时期与执行诊断}
+\begin{table}[H]\centering\small
+\begin{tabular}{lrrrr}\toprule
+月份 & 策略收益 & 基准收益 & 超额收益 & 失败订单 \\\midrule
+2023-08 & -6.75% & -5.80% & -0.96% & 1 \\
+2024-06 & -5.89% & -5.79% & -0.11% & 4 \\
+2022-04 & -5.80% & -9.50% & 3.70% & 0 \\
+2022-09 & -4.93% & -7.68% & 2.75% & 0 \\
+2024-08 & -4.59% & -4.12% & -0.46% & 5 \\
+\bottomrule\end{tabular}
+\caption{最终 OOS 最差五个策略月份}
+\end{table}
+\begin{table}[H]\centering\small
+\begin{tabular}{llr}\toprule
+方向 & 原因 & 失败订单 \\\midrule
+BUY & OPEN\_AT\_UP\_LIMIT & 20 \\
+BUY & NO\_OPEN\_PRICE\_AND\_SUSPENDED\_AT\_OPEN & 4 \\
+SELL & NO\_EXECUTION\_STATUS & 68 \\
+SELL & NO\_OPEN\_PRICE\_AND\_SUSPENDED\_AT\_OPEN & 15 \\
+SELL & OPEN\_AT\_DOWN\_LIMIT & 2 \\
+\bottomrule\end{tabular}
+\caption{最终 OOS 失败订单原因摘要}
+\end{table}
+失败时期分析同时检查收益、超额、换手、交易成本、现金和陈旧估值；这些变量是诊断线索，
+不被直接解释为因果。
+
+\section{限制与可信表述}
+\begin{enumerate}
+\item 供应商历史 PB 的修订政策未完全核验，1/PB 不是自行重建的严格 point-in-time
+账面权益。
+\item 三只退市证券缺少可审计终止估值事件，P5 期末陈旧估值权重为
+1.17%。
+\item P6 在看到最终 OOS 后执行，只能用于稳健性解释，不可用于调参或重新挑选策略。
+\item 四年 OOS 覆盖的市场状态有限，且未建模容量曲线与盘口冲击。
+\end{enumerate}
+
+\section{结论}
+项目的主要价值不只是一个收益数字，而是可追踪的研究治理：输入单位和语义明确，
+样本边界固定，交易约束可审计，公司行动可复核，验证后参数冻结，最终 OOS 只运行
+一次，事后实验与原始结果隔离。主结果在最终 OOS 为正并跑赢同期基准，但存在清晰的
+数据与估值限制。因此最终状态记为
+\texttt{PROJECT\_COMPLETE\_WITH\_DISCLOSED\_LIMITATIONS}。
+
+\appendix
+\section{复现入口}
+\begin{verbatim}
+python scripts/build_p6.py
+python -m pytest -q
+python scripts/audit_p6.py
+\end{verbatim}
+关键机器可读输出为 \texttt{results/metrics.json} 与
+\texttt{results/experiment\_registry.csv}；审计清单为
+\texttt{reports/robustness/p6\_run\_manifest.json}。
+\end{document}

@@ -1,0 +1,50 @@
+project:
+  research_cutoff: "2025-12-31"
+  calendar_start: "2014-12-01"
+  listing_age_threshold_trading_days: 120
+  history_threshold_observations: 252
+  liquidity_window_observations: 20
+  sample_dates:
+    - "2015-12-31"
+    - "2020-12-31"
+    - "2022-12-30"
+    - "2025-12-31"
+
+inputs:
+  trade_cal: data/static/trade_cal.parquet
+  stock_basic: data/static/stock_basic_all_status.parquet
+  namechange: data/static/namechange.parquet
+  sw_index_classify: data/static/sw_index_classify.parquet
+  sw_index_member_history: data/static/sw_index_member_history.parquet
+  daily: data/raw/tinyshare/daily/*.parquet
+  adj_factor: data/raw/tinyshare/adj_factor/*.parquet
+  daily_basic_month_end: data/raw/tinyshare/daily_basic_month_end/*.parquet
+  stk_limit: data/raw/tinyshare/stk_limit/*.parquet
+  suspend_d: data/raw/tinyshare/suspend_d/*.parquet
+  benchmark_daily: data/external/benchmark_daily.csv
+  security_code_history: data/manual/security_code_history.csv
+
+policies:
+  trading_costs: configs/trading_costs.yaml
+  stamp_duty_sources: docs/data_policies/stamp_duty_sources.md
+
+outputs:
+  input_inventory: reports/data_audit/input_inventory.csv
+  protected_input_hashes: reports/data_audit/protected_input_hashes.csv
+  daily_panel: data/processed/daily_panel.parquet
+  execution_status: data/processed/execution_status.parquet
+  industry_history: data/processed/industry_history.parquet
+  name_history: data/processed/name_history.parquet
+  month_end_base_panel: data/processed/month_end_base_panel.parquet
+  benchmark_daily: data/processed/benchmark_daily.parquet
+  sample_join_audit: reports/data_audit/sample_join_audit.csv
+  p1_audit_summary: reports/data_audit/p1_audit_summary.csv
+  p1_audit_report: reports/data_audit/p1_audit_report.md
+  p1_run_manifest: reports/data_audit/p1_run_manifest.json
+
+protected_inputs:
+  - data/raw
+  - data/static
+  - data/_parts
+  - data/external/benchmark_daily.csv
+  - data/manual

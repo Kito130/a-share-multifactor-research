@@ -1,0 +1,46 @@
+# Python and local environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Credentials and local configuration
+.env
+.env.*
+local_secrets.py
+**/local_secrets.py
+credentials.json
+*credentials*.json
+secrets.*
+*.key
+*.pem
+
+# Licensed or private market data
+data/*
+!data/README.md
+!data/schemas/
+!data/schemas/**
+!data/demo_synthetic/
+!data/demo_synthetic/**
+
+# Runtime and generated intermediates
+archive/
+tmp/
+logs/
+*.log
+*.part
+*.tmp
+reports/*.aux
+reports/*.out
+reports/*.toc
+reports/*.synctex.gz
+.report_tmp/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

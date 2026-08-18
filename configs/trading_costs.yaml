@@ -1,0 +1,40 @@
+policy_name: a_share_historical_trading_costs
+policy_status: CONFIRMED
+research_start: "2016-01-01"
+research_end: "2025-12-31"
+
+stamp_duty:
+  taxable_side: sell
+  tax_base: transaction_amount
+  buy_rate: 0.0
+  periods:
+    - effective_from: "2016-01-01"
+      effective_to: "2023-08-27"
+      sell_rate: 0.001
+      source_ids:
+        - MOF_2008_SINGLE_SIDE
+        - STAMP_TAX_LAW_2022
+    - effective_from: "2023-08-28"
+      effective_to: "2025-12-31"
+      sell_rate: 0.0005
+      source_ids:
+        - MOF_STA_2023_39
+
+source_registry:
+  - source_id: MOF_2008_SINGLE_SIDE
+    authority: 中华人民共和国财政部、国家税务总局
+    title: 9月19日起证券交易印花税改为单边征收
+    publication_date: "2008-09-19"
+    url: https://www.mof.gov.cn/zhengwuxinxi/caizhengxinwen/200809/t20080919_76432.htm
+  - source_id: STAMP_TAX_LAW_2022
+    authority: 全国人民代表大会常务委员会
+    title: 中华人民共和国印花税法
+    effective_date: "2022-07-01"
+    url: https://fgk.chinatax.gov.cn/zcfgk/c100009/c5193058/content.html
+  - source_id: MOF_STA_2023_39
+    authority: 中华人民共和国财政部、国家税务总局
+    title: 关于减半征收证券交易印花税的公告
+    document_number: 财政部 税务总局公告2023年第39号
+    publication_date: "2023-08-27"
+    effective_date: "2023-08-28"
+    url: https://www.mof.gov.cn/jrttts/202308/t20230828_3904235.htm

@@ -1,0 +1,67 @@
+project:
+  phase: P2_SINGLE_FACTOR_RESEARCH
+  warmup_start: "2014-12-01"
+  research_start: "2016-01-01"
+  research_end: "2019-12-31"
+  validation_start: "2020-01-01"
+  oos_start: "2022-01-01"
+
+inputs:
+  daily_panel: data/processed/daily_panel.parquet
+  month_end_base_panel: data/processed/month_end_base_panel.parquet
+  security_code_history: data/manual/security_code_history.csv
+
+outputs:
+  security_code_boundary_summary: reports/factor_research/security_code_boundary_summary.csv
+  security_code_boundary_tests: reports/factor_research/security_code_boundary_tests.csv
+  security_code_boundary_report: reports/factor_research/security_code_boundary_report.md
+  single_factor_panel: data/processed/p2_single_factor_panel.parquet
+  factor_coverage: reports/factor_research/factor_coverage.csv
+  monthly_rank_ic: results/p2_single_factor/monthly_rank_ic.csv
+  ic_summary: results/p2_single_factor/ic_summary.csv
+  quintile_returns: results/p2_single_factor/quintile_returns.csv
+  annual_results: results/p2_single_factor/annual_results.csv
+  factor_correlations_monthly: results/p2_single_factor/factor_correlations_monthly.csv
+  factor_correlations_summary: results/p2_single_factor/factor_correlations_summary.csv
+  industry_exposure: results/p2_single_factor/industry_exposure.csv
+  size_exposure: results/p2_single_factor/size_exposure.csv
+  worst_periods: results/p2_single_factor/worst_periods.csv
+  p2_input_hashes: reports/factor_research/p2_input_hashes.csv
+  p2_audit_summary: reports/factor_research/p2_audit_summary.csv
+  p2_audit_report: reports/factor_research/p2_audit_report.md
+  p2_run_manifest: reports/factor_research/p2_run_manifest.json
+
+boundary_tests:
+  price_absolute_tolerance: 0.005
+  adj_factor_relative_tolerance: 0.001
+  require_new_first_date_equals_effective_date: true
+  maximum_valid_canonical_duplicate_rows: 0
+
+factors:
+  momentum_recent_skip_observations: 21
+  momentum_lookback_observations: 252
+  lowvol_window_observations: 60
+  lowvol_standard_deviation: sample
+  winsor_lower_quantile: 0.01
+  winsor_upper_quantile: 0.99
+  zscore_standard_deviation: sample
+
+universe:
+  listing_age_minimum_trading_days: 120
+  liquidity_window_observations: 20
+  liquidity_excluded_lower_quantile: 0.20
+  exclude_historical_st_name: true
+  require_all_three_factors: true
+
+statistics:
+  rank_method: average
+  rank_ic_method: spearman
+  icir_annualization_factor: 3.4641016151377544
+  quintiles: 5
+  minimum_cross_section_observations: 5
+  worst_periods_per_factor_metric: 5
+
+protected_p2_inputs:
+  - data/processed/daily_panel.parquet
+  - data/processed/month_end_base_panel.parquet
+  - data/manual/security_code_history.csv

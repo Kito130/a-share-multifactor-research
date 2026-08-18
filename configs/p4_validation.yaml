@@ -1,0 +1,164 @@
+project:
+  phase: P4_VALIDATION_AND_FREEZE
+  warmup_start: "2014-12-01"
+  research_start: "2016-01-01"
+  research_end: "2019-12-31"
+  validation_start: "2020-01-01"
+  validation_end: "2021-12-31"
+  oos_start: "2022-01-01"
+  oos_end: "2025-12-31"
+
+inputs:
+  daily_panel: data/processed/daily_panel.parquet
+  month_end_base_panel: data/processed/month_end_base_panel.parquet
+  execution_status: data/processed/execution_status.parquet
+  benchmark_daily: data/processed/benchmark_daily.parquet
+  stock_basic: data/static/stock_basic_all_status.parquet
+  security_code_history: data/manual/security_code_history.csv
+  corporate_actions: data/manual/corporate_actions.csv
+  trading_costs: configs/trading_costs.yaml
+  p1_protected_input_hashes: reports/data_audit/protected_input_hashes.csv
+  p2_config: configs/p2_factor_research.yaml
+  p2_panel: data/processed/p2_single_factor_panel.parquet
+  p2_manifest: reports/factor_research/p2_run_manifest.json
+  p3_config: configs/p3_backtest.yaml
+  p3_composite_signals: data/processed/p3_composite_signals.parquet
+  p3_target_holdings: data/processed/p3_target_holdings.parquet
+  p3_daily_portfolio: data/processed/p3_daily_portfolio.parquet
+  p3_manifest: reports/backtest/p3_run_manifest.json
+
+outputs:
+  factor_panel: data/processed/p4_factor_panel_2016_2021.parquet
+  composite_signals: data/processed/p4_composite_signals_2016_2021.parquet
+  target_holdings: data/processed/p4_target_holdings_2016_2021.parquet
+  daily_portfolio: data/processed/p4_daily_portfolio_2016_2021.parquet
+  actual_holdings: data/processed/p4_actual_holdings_2016_2021.parquet
+  orders: data/processed/p4_orders_2016_2021.parquet
+  failed_orders: data/processed/p4_failed_orders_2016_2021.parquet
+  cash_ledger: data/processed/p4_cash_ledger_2016_2021.parquet
+  corporate_action_events: data/processed/p4_corporate_action_events_2016_2021.parquet
+  validation_factor_coverage: reports/validation/p4_factor_coverage.csv
+  validation_monthly_rank_ic: results/p4_validation/monthly_rank_ic.csv
+  validation_ic_summary: results/p4_validation/ic_summary.csv
+  validation_quintile_returns: results/p4_validation/quintile_returns.csv
+  validation_annual_results: results/p4_validation/annual_results.csv
+  validation_factor_correlations_monthly: results/p4_validation/factor_correlations_monthly.csv
+  validation_factor_correlations_summary: results/p4_validation/factor_correlations_summary.csv
+  validation_industry_exposure: results/p4_validation/industry_exposure.csv
+  validation_size_exposure: results/p4_validation/size_exposure.csv
+  validation_worst_periods: results/p4_validation/worst_periods.csv
+  rebalance_schedule: reports/validation/p4_rebalance_schedule.csv
+  rebalance_summary: reports/validation/p4_rebalance_summary.csv
+  research_reproduction: reports/validation/p4_research_reproduction.csv
+  p4_input_hashes: reports/validation/p4_input_hashes.csv
+  performance_summary: results/p4_validation/performance_summary_2016_2021.csv
+  annual_performance: results/p4_validation/annual_performance.csv
+  period_performance: results/p4_validation/period_performance.csv
+  validation_comparison: results/p4_validation/validation_vs_research.csv
+  failure_reason_summary: results/p4_validation/failure_reason_summary.csv
+  stale_position_summary: results/p4_validation/stale_position_summary.csv
+  frozen_config: configs/frozen_config.yaml
+  frozen_protocol: reports/frozen_protocol.md
+  config_sha256: results/config_sha256.txt
+  p4_audit_summary: reports/validation/p4_audit_summary.csv
+  p4_audit_report: reports/validation/p4_audit_report.md
+  p4_run_manifest: reports/validation/p4_run_manifest.json
+
+factors:
+  momentum_recent_skip_observations: 21
+  momentum_lookback_observations: 252
+  lowvol_window_observations: 60
+  lowvol_standard_deviation: sample
+  winsor_lower_quantile: 0.01
+  winsor_upper_quantile: 0.99
+  zscore_standard_deviation: sample
+
+universe:
+  listing_age_minimum_trading_days: 120
+  liquidity_window_observations: 20
+  liquidity_excluded_lower_quantile: 0.20
+  exclude_historical_st_name: true
+  require_all_three_factors: true
+
+statistics:
+  rank_method: average
+  rank_ic_method: spearman
+  icir_annualization_factor: 3.4641016151377544
+  quintiles: 5
+  minimum_cross_section_observations: 5
+  worst_periods_per_factor_metric: 5
+
+portfolio:
+  initial_capital_cny: 100000000.0
+  maximum_holdings: 100
+  target_gross_weight: 1.0
+  maximum_single_name_target_weight: 0.02
+  allow_fractional_adjusted_units: true
+  board_lot_rounding: false
+  rebalance_frequency: monthly
+  signal_timing: month_end_close
+  execution_timing: next_market_trading_day_open
+  trade_ordering: sells_before_buys
+  insufficient_cash_allocation: pro_rata_including_blocked_buy_demand
+  minimum_order_notional_cny: 0.01
+  position_unit_epsilon: 1.0e-12
+
+composite:
+  bm_proxy_z_weight: 0.3333333333333333
+  momentum_12_1_z_weight: 0.3333333333333333
+  lowvol_60_z_weight: 0.3333333333333333
+
+cost_scenarios:
+  - scenario: STRESS_5BPS
+    commission_slippage_rate_one_way: 0.0005
+    is_baseline: false
+  - scenario: BASE_10BPS
+    commission_slippage_rate_one_way: 0.001
+    is_baseline: true
+  - scenario: STRESS_20BPS
+    commission_slippage_rate_one_way: 0.002
+    is_baseline: false
+
+valuation:
+  trading_price: adjusted_open
+  closing_valuation_price: adjusted_close
+  missing_close_valuation: last_available_adjusted_close
+  stale_price_execution_allowed: false
+  terminal_liquidation: false
+
+corporate_actions:
+  effective_date_field: delist_date
+  quantity_basis: raw_share_equivalent
+  successor_adjusted_unit_basis: first_available_successor_adj_factor
+  pre_listing_valuation: value_preserving_corporate_action_carry
+  fractional_shares_allowed: true
+  automatic_successor_sale: false
+  event_activity_type: CORPORATE_ACTION
+
+metrics:
+  trading_days_per_year: 252
+  risk_free_rate: 0.0
+
+freeze:
+  status: FROZEN_AFTER_VALIDATION
+  allow_parameter_changes_after_freeze: false
+  oos_requires_new_explicit_authorization: true
+  validation_result_is_not_oos: true
+
+protected_p4_inputs:
+  - data/processed/daily_panel.parquet
+  - data/processed/month_end_base_panel.parquet
+  - data/processed/execution_status.parquet
+  - data/processed/benchmark_daily.parquet
+  - data/static/stock_basic_all_status.parquet
+  - data/manual/security_code_history.csv
+  - data/manual/corporate_actions.csv
+  - configs/trading_costs.yaml
+  - configs/p2_factor_research.yaml
+  - data/processed/p2_single_factor_panel.parquet
+  - reports/factor_research/p2_run_manifest.json
+  - configs/p3_backtest.yaml
+  - data/processed/p3_composite_signals.parquet
+  - data/processed/p3_target_holdings.parquet
+  - data/processed/p3_daily_portfolio.parquet
+  - reports/backtest/p3_run_manifest.json

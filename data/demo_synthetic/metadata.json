@@ -1,0 +1,16 @@
+{
+  "classification": "SYNTHETIC",
+  "formal_research_result": false,
+  "generated_by": "scripts/generate_demo_data.py",
+  "rows": 180,
+  "seed": 20260818,
+  "signal_dates": [
+    "2020-01-31",
+    "2020-02-28",
+    "2020-03-31",
+    "2020-04-30",
+    "2020-05-29",
+    "2020-06-30"
+  ],
+  "stocks_per_cross_section": 30
+}

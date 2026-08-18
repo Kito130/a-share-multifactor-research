@@ -1,0 +1,163 @@
+project:
+  phase: P6_ROBUSTNESS_REPORT_AND_CAREER
+  authorization_reference: "POST_OOS_ROBUSTNESS_GATE"
+  p5_status_required: P5_ACCEPTED_FINAL_OOS_WITH_DISCLOSED_LIMITATIONS
+  expected_frozen_sha256: "14ab015fbce37a2236772f69d157c4b9ade05fcb92c0469301de553a22486d68"
+  experiment_classification: POST_OOS_ROBUSTNESS
+  preserve_p5_original_results: true
+
+inputs:
+  frozen_config: configs/frozen_config.yaml
+  p2_config: configs/p2_factor_research.yaml
+  p5_config: configs/p5_oos.yaml
+  p5_manifest: reports/oos/p5_run_manifest.json
+  p5_run_intent: reports/oos/p5_run_intent.json
+  p5_factor_panel: data/processed/p5_factor_panel_2016_2025.parquet
+  p5_daily_portfolio: data/processed/p5_daily_portfolio_2016_2025.parquet
+  p5_actual_holdings: data/processed/p5_actual_holdings_2016_2025.parquet
+  p5_orders: data/processed/p5_orders_2016_2025.parquet
+  p5_oos_daily_portfolio: data/processed/p5_oos_daily_portfolio_2022_2025.parquet
+  p5_oos_actual_holdings: data/processed/p5_oos_actual_holdings_2022_2025.parquet
+  p5_oos_orders: data/processed/p5_oos_orders_2022_2025.parquet
+  p5_oos_performance: results/p5_oos/oos_performance.csv
+  p5_annual_performance: results/p5_oos/annual_performance.csv
+  p5_research_performance: results/p3_backtest/performance_summary.csv
+  p5_validation_performance: results/p4_validation/period_performance.csv
+  p2_ic_summary: results/p2_single_factor/ic_summary.csv
+  p4_ic_summary: results/p4_validation/ic_summary.csv
+  p5_ic_summary: results/p5_oos/ic_summary.csv
+  daily_panel: data/processed/daily_panel.parquet
+  month_end_base_panel: data/processed/month_end_base_panel.parquet
+  execution_status: data/processed/execution_status.parquet
+  benchmark_daily: data/processed/benchmark_daily.parquet
+  stock_basic: data/static/stock_basic_all_status.parquet
+  corporate_actions: data/manual/corporate_actions.csv
+  trading_costs: configs/trading_costs.yaml
+
+experiments:
+  - experiment_id: P5_BASELINE_REFERENCE
+    category: baseline_reference
+    implementation: reuse_p5_no_rerun
+    description: P5冻结原始OOS，仅作为比较锚点
+
+  - experiment_id: MICROCAP_EXCLUDE_BOTTOM20
+    category: universe
+    implementation: rerun_baseline_cost
+    excluded_market_cap_quantile: 0.20
+    description: 每月在合格股票池中剔除总市值最低20%
+
+  - experiment_id: MOMENTUM_9_1
+    category: factor_window
+    implementation: rerun_baseline_cost
+    momentum_recent_skip_observations: 21
+    momentum_lookback_observations: 189
+    lowvol_window_observations: 60
+    description: 动量窗口从12-1改为约9-1
+
+  - experiment_id: LOWVOL_120
+    category: factor_window
+    implementation: rerun_baseline_cost
+    momentum_recent_skip_observations: 21
+    momentum_lookback_observations: 252
+    lowvol_window_observations: 120
+    description: 低波窗口从60日改为120日
+
+  - experiment_id: INDUSTRY_NEUTRAL
+    category: neutralization
+    implementation: rerun_baseline_cost
+    method: within_industry_demean_then_cross_section_zscore
+    description: 三个因子分别做月度行业内去均值后再标准化
+
+  - experiment_id: LOG_SIZE_NEUTRAL
+    category: neutralization
+    implementation: rerun_baseline_cost
+    method: monthly_ols_residual_on_log_total_market_cap_then_zscore
+    description: 三个因子分别对数总市值回归取残差后再标准化
+
+  - experiment_id: COST_5BPS_REFERENCE
+    category: cost
+    implementation: reuse_p5_no_rerun
+    commission_slippage_rate_one_way: 0.0005
+    description: P5冻结5bps成本情景
+
+  - experiment_id: COST_20BPS_REFERENCE
+    category: cost
+    implementation: reuse_p5_no_rerun
+    commission_slippage_rate_one_way: 0.002
+    description: P5冻结20bps成本情景
+
+  - experiment_id: DELIST_TERMINAL_RECOVERY
+    category: delisting_sensitivity
+    implementation: terminal_valuation_sensitivity_no_trade_rerun
+    recovery_rates:
+      - 0.00
+      - 0.25
+      - 0.50
+      - 0.75
+      - 1.00
+    affected_codes:
+      - 000413.SZ
+      - 000666.SZ
+      - 000671.SZ
+    description: 仅调整P5期末陈旧估值，不推断退市日，不改订单或历史路径
+
+  - experiment_id: FAILURE_PERIOD_ANALYSIS
+    category: diagnostics
+    implementation: reuse_p5_no_rerun
+    worst_months: 10
+    description: 分析最差策略月份、最差超额月份、成交失败和陈旧估值
+
+outputs:
+  experiment_protocol: reports/robustness/p6_experiment_protocol.md
+  experiment_registry: results/experiment_registry.csv
+  experiment_metrics: results/p6_robustness/experiment_metrics.csv
+  delisting_sensitivity: results/p6_robustness/delisting_recovery_sensitivity.csv
+  monthly_diagnostics: results/p6_robustness/monthly_diagnostics.csv
+  worst_months: results/p6_robustness/worst_months.csv
+  drawdown_episodes: results/p6_robustness/drawdown_episodes.csv
+  failure_reason_summary: results/p6_robustness/failure_reason_summary.csv
+  metrics_json: results/metrics.json
+  robustness_report: reports/robustness/p6_robustness_report.md
+  limitations: reports/limitations.md
+  research_report_tex: reports/research_report.tex
+  research_report_pdf: reports/research_report.pdf
+  research_report_pdf_copy: output/pdf/research_report.pdf
+  resume_evidence_map: resume_evidence_map.md
+  interview_notes: interview_notes.md
+  p6_input_hashes: reports/robustness/p6_input_hashes.csv
+  p5_output_hash_check: reports/robustness/p5_output_hash_check.csv
+  p6_audit_summary: reports/robustness/p6_audit_summary.csv
+  p6_audit_report: reports/robustness/p6_audit_report.md
+  p6_run_manifest: reports/robustness/p6_run_manifest.json
+  chart_cumulative_nav: reports/figures/p6_cumulative_nav.png
+  chart_drawdown: reports/figures/p6_drawdown.png
+  chart_annual_returns: reports/figures/p6_annual_returns.png
+  chart_factor_ic: reports/figures/p6_factor_ic.png
+  chart_robustness: reports/figures/p6_robustness.png
+  chart_delisting: reports/figures/p6_delisting_sensitivity.png
+
+protected_p6_inputs:
+  - configs/frozen_config.yaml
+  - configs/p5_oos.yaml
+  - reports/oos/p5_run_manifest.json
+  - reports/oos/p5_run_intent.json
+  - reports/oos/p5_result_report.md
+  - reports/oos/p5_audit_summary.csv
+  - reports/oos/p5_audit_report.md
+  - data/processed/p5_factor_panel_2016_2025.parquet
+  - data/processed/p5_daily_portfolio_2016_2025.parquet
+  - data/processed/p5_actual_holdings_2016_2025.parquet
+  - data/processed/p5_orders_2016_2025.parquet
+  - data/processed/p5_oos_daily_portfolio_2022_2025.parquet
+  - data/processed/p5_oos_actual_holdings_2022_2025.parquet
+  - data/processed/p5_oos_orders_2022_2025.parquet
+  - results/p5_oos/oos_performance.csv
+  - results/p5_oos/annual_performance.csv
+  - results/p5_oos/ic_summary.csv
+  - data/processed/daily_panel.parquet
+  - data/processed/month_end_base_panel.parquet
+  - data/processed/execution_status.parquet
+  - data/processed/benchmark_daily.parquet
+  - data/static/stock_basic_all_status.parquet
+  - data/manual/corporate_actions.csv
+  - configs/trading_costs.yaml

@@ -1,0 +1,106 @@
+project:
+  phase: P3_COMPOSITE_AND_BENCHMARK_BACKTEST
+  research_start: "2016-01-01"
+  research_end: "2019-12-31"
+  validation_start: "2020-01-01"
+  oos_start: "2022-01-01"
+
+inputs:
+  p2_single_factor_panel: data/processed/p2_single_factor_panel.parquet
+  p2_run_manifest: reports/factor_research/p2_run_manifest.json
+  daily_panel: data/processed/daily_panel.parquet
+  execution_status: data/processed/execution_status.parquet
+  benchmark_daily: data/processed/benchmark_daily.parquet
+  stock_basic: data/static/stock_basic_all_status.parquet
+  trading_costs: configs/trading_costs.yaml
+  corporate_actions: data/manual/corporate_actions.csv
+  p1_protected_input_hashes: reports/data_audit/protected_input_hashes.csv
+  legacy_p3_archive_manifest: archive/p3_pre_corporate_action_600270/archive_manifest.csv
+  legacy_p3_performance_summary: archive/p3_pre_corporate_action_600270/results/p3_backtest/performance_summary.csv
+
+outputs:
+  composite_signals: data/processed/p3_composite_signals.parquet
+  target_holdings: data/processed/p3_target_holdings.parquet
+  daily_portfolio: data/processed/p3_daily_portfolio.parquet
+  actual_holdings: data/processed/p3_actual_holdings.parquet
+  orders: data/processed/p3_orders.parquet
+  failed_orders: data/processed/p3_failed_orders.parquet
+  cash_ledger: data/processed/p3_cash_ledger.parquet
+  corporate_action_events: data/processed/p3_corporate_action_events.parquet
+  rebalance_schedule: reports/backtest/p3_rebalance_schedule.csv
+  rebalance_summary: reports/backtest/p3_rebalance_summary.csv
+  p3_input_hashes: reports/backtest/p3_input_hashes.csv
+  original_data_hash_check: reports/backtest/p3_original_data_hash_check.csv
+  performance_summary: results/p3_backtest/performance_summary.csv
+  annual_performance: results/p3_backtest/annual_performance.csv
+  cost_scenario_comparison: results/p3_backtest/cost_scenario_comparison.csv
+  corporate_action_impact: results/p3_backtest/corporate_action_impact.csv
+  failure_reason_summary: results/p3_backtest/failure_reason_summary.csv
+  stale_position_summary: results/p3_backtest/stale_position_summary.csv
+  p3_audit_summary: reports/backtest/p3_audit_summary.csv
+  p3_audit_report: reports/backtest/p3_audit_report.md
+  p3_run_manifest: reports/backtest/p3_run_manifest.json
+
+portfolio:
+  initial_capital_cny: 100000000.0
+  maximum_holdings: 100
+  target_gross_weight: 1.0
+  maximum_single_name_target_weight: 0.02
+  allow_fractional_adjusted_units: true
+  board_lot_rounding: false
+  rebalance_frequency: monthly
+  signal_timing: month_end_close
+  execution_timing: next_market_trading_day_open
+  trade_ordering: sells_before_buys
+  insufficient_cash_allocation: pro_rata_including_blocked_buy_demand
+  minimum_order_notional_cny: 0.01
+  position_unit_epsilon: 1.0e-12
+
+composite:
+  bm_proxy_z_weight: 0.3333333333333333
+  momentum_12_1_z_weight: 0.3333333333333333
+  lowvol_60_z_weight: 0.3333333333333333
+
+cost_scenarios:
+  - scenario: STRESS_5BPS
+    commission_slippage_rate_one_way: 0.0005
+    is_baseline: false
+  - scenario: BASE_10BPS
+    commission_slippage_rate_one_way: 0.001
+    is_baseline: true
+  - scenario: STRESS_20BPS
+    commission_slippage_rate_one_way: 0.002
+    is_baseline: false
+
+valuation:
+  trading_price: adjusted_open
+  closing_valuation_price: adjusted_close
+  missing_close_valuation: last_available_adjusted_close
+  stale_price_execution_allowed: false
+  terminal_liquidation: false
+
+corporate_actions:
+  effective_date_field: delist_date
+  quantity_basis: raw_share_equivalent
+  successor_adjusted_unit_basis: first_available_successor_adj_factor
+  pre_listing_valuation: value_preserving_corporate_action_carry
+  fractional_shares_allowed: true
+  automatic_successor_sale: false
+  event_activity_type: CORPORATE_ACTION
+
+metrics:
+  trading_days_per_year: 252
+  risk_free_rate: 0.0
+
+protected_p3_inputs:
+  - data/processed/p2_single_factor_panel.parquet
+  - reports/factor_research/p2_run_manifest.json
+  - data/processed/daily_panel.parquet
+  - data/processed/execution_status.parquet
+  - data/processed/benchmark_daily.parquet
+  - data/static/stock_basic_all_status.parquet
+  - configs/trading_costs.yaml
+  - data/manual/corporate_actions.csv
+  - reports/data_audit/protected_input_hashes.csv
+  - archive/p3_pre_corporate_action_600270/archive_manifest.csv
+  - archive/p3_pre_corporate_action_600270/results/p3_backtest/performance_summary.csv
