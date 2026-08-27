@@ -1,7 +1,7 @@
 # Final OOS Summary
 
-This document is the public-facing summary of the frozen P5 final OOS. It is
-not a new backtest and it does not change the frozen configuration.
+This document is the public-facing summary of the frozen final OOS. It is not a
+new backtest and it does not change the frozen configuration.
 
 ## Scope
 
@@ -53,7 +53,7 @@ the project does not claim that all three factors were stable in every period.
 
 The authoritative machine-readable row is in
 `results/p5_oos/oos_performance.csv`. The detailed frozen report is
-`reports/oos/p5_result_report.md`. The P5 result was produced from excluded
+`reports/oos/p5_result_report.md`. The frozen result was produced from excluded
 licensed inputs; the public synthetic data is not a reproduction of this row.
 Post-OOS robustness and delisting recovery sensitivity are interpretive checks
 only and must not be presented as fresh OOS evidence.

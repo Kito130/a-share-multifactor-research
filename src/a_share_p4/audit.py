@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import re
@@ -14,6 +13,7 @@ import pandas as pd
 import yaml
 
 from .build import PB_DISCLOSURE
+from a_share_common.hashing import file_sha256 as _sha256
 from .config import absolute, load_config, sql_path
 
 
@@ -59,14 +59,6 @@ class AuditCollector:
 
     def frame(self) -> pd.DataFrame:
         return pd.DataFrame(asdict(item) for item in self.results)
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _write_csv_atomic(frame: pd.DataFrame, relative_path: str) -> None:

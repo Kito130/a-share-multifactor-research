@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import os
@@ -20,6 +19,7 @@ from a_share_p2.research import (
     _build_statistics,
     _factor_panel_query,
 )
+from a_share_common.hashing import file_sha256 as _sha256
 from a_share_p3.build import (
     _annual_performance,
     _build_composite_signals,
@@ -46,14 +46,6 @@ PB_DISCLOSURE = (
 
 def _log(message: str) -> None:
     print(f"[P4] {message}", flush=True)
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _write_csv_atomic(frame: pd.DataFrame, relative_path: str) -> None:
