@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import hashlib
-import json
 import math
-import os
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -13,6 +10,12 @@ import duckdb
 import pandas as pd
 
 from .config import absolute, load_config, sql_path
+from a_share_common.hashing import file_sha256 as _sha256
+from a_share_common.io import (
+    atomic_write_csv,
+    atomic_write_json,
+    atomic_write_text,
+)
 
 
 PB_DISCLOSURE = (
@@ -71,44 +74,16 @@ class AuditCollector:
         return pd.DataFrame(asdict(item) for item in self.results)
 
 
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def _write_csv_atomic(frame: pd.DataFrame, relative_path: str) -> None:
-    output = absolute(relative_path)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    temporary = output.with_suffix(output.suffix + ".tmp")
-    if temporary.exists():
-        temporary.unlink()
-    frame.to_csv(temporary, index=False, encoding="utf-8-sig")
-    os.replace(temporary, output)
+    atomic_write_csv(frame, relative_path)
 
 
 def _write_text_atomic(text: str, relative_path: str) -> None:
-    output = absolute(relative_path)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    temporary = output.with_suffix(output.suffix + ".tmp")
-    if temporary.exists():
-        temporary.unlink()
-    temporary.write_text(text, encoding="utf-8")
-    os.replace(temporary, output)
+    atomic_write_text(text, relative_path)
 
 
 def _write_json_atomic(payload: dict[str, Any], relative_path: str) -> None:
-    output = absolute(relative_path)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    temporary = output.with_suffix(output.suffix + ".tmp")
-    if temporary.exists():
-        temporary.unlink()
-    with temporary.open("w", encoding="utf-8") as handle:
-        json.dump(payload, handle, ensure_ascii=False, indent=2)
-        handle.write("\n")
-    os.replace(temporary, output)
+    atomic_write_json(payload, relative_path)
 
 
 def _all_paths_relative(config: dict[str, Any]) -> bool:

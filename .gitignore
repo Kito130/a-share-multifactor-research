@@ -21,6 +21,8 @@ secrets.*
 # Licensed or private market data
 data/*
 !data/README.md
+!data/DATA_MANIFEST.md
+!data/SCHEMA.md
 !data/schemas/
 !data/schemas/**
 !data/demo_synthetic/

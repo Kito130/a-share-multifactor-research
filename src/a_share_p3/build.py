@@ -16,6 +16,7 @@ import pyarrow
 import yaml
 
 from .config import CONFIG_PATH, PROJECT_ROOT, absolute, load_config, sql_path
+from a_share_common.hashing import file_sha256 as _sha256
 
 
 BUILDER_VERSION = "p3.2"
@@ -45,14 +46,6 @@ ORIGINAL_DATA_PREFIXES = (
 
 def _log(message: str) -> None:
     print(f"[P3] {message}", flush=True)
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _write_csv_atomic(frame: pd.DataFrame, relative_path: str) -> None:

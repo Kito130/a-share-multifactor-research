@@ -15,8 +15,9 @@ manually reviewed corporate-action table. The benchmark is CSI All Share
 (`000985.CSI`). The public repository includes schemas and synthetic fixtures,
 not these licensed inputs.
 
-P1 normalizes units, preserves raw and canonical security codes, checks listing
-intervals, and creates daily and month-end panels. The stock universe requires:
+The normalization workflow preserves raw and canonical security codes, checks
+listing intervals, and creates daily and month-end panels. The stock universe
+requires:
 
 - a Shenzhen or Shanghai listing with a valid historical listing interval;
 - at least 120 trading days since listing;
@@ -61,14 +62,14 @@ avoid introducing a board-lot assumption that the source data cannot support.
 
 Validation was used to assess the pre-specified implementation, not to retune
 parameters. The final OOS was authorized and executed once. The frozen
-configuration hash is recorded in the shipped protocol and P5 manifest. The
-public synthetic fixture never enters this formal result.
+configuration hash is recorded in the shipped freeze protocol and private final
+OOS manifest. The public synthetic fixture never enters this formal result.
 
 ## Audit and Reproduction Boundary
 
-P1-P4 tests verify data uniqueness, code-history intervals, factor formulas,
-forward-label timing, universe rules, portfolio accounting, execution timing,
-cost formulas, corporate actions, and freeze hashes. P5 records input/output
-hashes and aggregate results. A public clone can run the synthetic software
-contract tests, but cannot regenerate the formal result without the excluded
-licensed data.
+Private-stage tests verify data uniqueness, code-history intervals, factor
+formulas, forward-label timing, universe rules, portfolio accounting,
+execution timing, cost formulas, corporate actions, and freeze hashes. The
+final evaluation records input/output hashes and aggregate results. A public
+clone can run the synthetic software contract tests, but cannot regenerate the
+formal result without the excluded licensed data.
